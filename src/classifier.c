@@ -636,8 +636,10 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
     int i;
 
     while(1){
+#ifndef _MSC_VER
         struct timeval tval_before, tval_after, tval_result;
         gettimeofday(&tval_before, NULL);
+#endif
 
         image in = get_image_from_stream(cap);
         image in_s = resize_image(in, net.w, net.h);
@@ -660,10 +662,12 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
 
         cvWaitKey(10);
 
+#ifndef _MSC_VER
         gettimeofday(&tval_after, NULL);
         timersub(&tval_after, &tval_before, &tval_result);
         float curr = 1000000.f/((long int)tval_result.tv_usec);
         fps = .9*fps + .1*curr;
+#endif
     }
 #endif
 }

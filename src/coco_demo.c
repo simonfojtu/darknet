@@ -9,12 +9,16 @@
 #include "parser.h"
 #include "box.h"
 #include "image.h"
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 
 #define FRAMES 1
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+//#include "opencv2/highgui/highgui.hpp"
+//#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui_c.h"
+#include "opencv2/imgproc/imgproc_c.h"
 void convert_coco_detections(float *predictions, int classes, int num, int square, int side, int w, int h, float thresh, float **probs, box *boxes, int only_objectness);
 
 extern char *coco_classes[];
@@ -104,8 +108,10 @@ void demo_coco(char *cfgfile, char *weightfile, float thresh, int cam_index, con
     probs = (float **)calloc(l.side*l.side*l.n, sizeof(float *));
     for(j = 0; j < l.side*l.side*l.n; ++j) probs[j] = (float *)calloc(l.classes, sizeof(float *));
 
+#ifndef _MSC_VER
     pthread_t fetch_thread;
     pthread_t detect_thread;
+#endif
 
     fetch_in_thread_coco(0);
     det = in;
@@ -126,25 +132,37 @@ void demo_coco(char *cfgfile, char *weightfile, float thresh, int cam_index, con
     }
 
     while(1){
+#ifndef _MSC_VER
         struct timeval tval_before, tval_after, tval_result;
         gettimeofday(&tval_before, NULL);
+#endif
+
+#ifndef _MSC_VER
         if(pthread_create(&fetch_thread, 0, fetch_in_thread_coco, 0)) error("Thread creation failed");
         if(pthread_create(&detect_thread, 0, detect_in_thread_coco, 0)) error("Thread creation failed");
+#endif
         show_image(disp, "COCO");
         //save_image(disp, "COCO");
         free_image(disp);
         cvWaitKey(10);
+#ifndef _MSC_VER
         pthread_join(fetch_thread, 0);
         pthread_join(detect_thread, 0);
+#else
+        fetch_in_thread_coco(0);
+        detect_in_thread_coco(0);
+#endif
 
         disp  = det;
         det   = in;
         det_s = in_s;
 
+#ifndef _MSC_VER
         gettimeofday(&tval_after, NULL);
         timersub(&tval_after, &tval_before, &tval_result);
         float curr = 1000000.f/((long int)tval_result.tv_usec);
         fps = .9*fps + .1*curr;
+#endif
     }
 }
 #else
