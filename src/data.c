@@ -27,7 +27,11 @@ char **get_random_paths(char **paths, int n, int m)
     char **random_paths = calloc(n, sizeof(char*));
     int i;
     for(i = 0; i < n; ++i){
+#ifndef _MSC_VER
         int index = rand_r(&data_seed)%m;
+#else
+        int index = rand(&data_seed)%m;
+#endif
         random_paths[i] = paths[index];
         if(i == 0) printf("%s\n", paths[index]);
     }
@@ -93,7 +97,11 @@ matrix load_image_cropped_paths(char **paths, int n, int min, int max, int size)
     for(i = 0; i < n; ++i){
         image im = load_image_color(paths[i], 0, 0);
         image crop = random_crop_image(im, min, max, size);
+#ifndef _MSC_VER
         int flip = rand_r(&data_seed)%2;
+#else
+        int flip = rand(&data_seed)%2;
+#endif
         if (flip) flip_image(crop);
         /*
         show_image(im, "orig");
@@ -139,7 +147,11 @@ void randomize_boxes(box_label *b, int n)
     int i;
     for(i = 0; i < n; ++i){
         box_label swap = b[i];
+#ifndef _MSC_VER
         int index = rand_r(&data_seed)%n;
+#else
+        int index = rand(&data_seed)%n;
+#endif
         b[i] = b[index];
         b[index] = swap;
     }
@@ -491,7 +503,11 @@ data load_data_region(int n, char **paths, int m, int w, int h, int size, int cl
         float sx = (float)swidth  / ow;
         float sy = (float)sheight / oh;
 
+#ifndef _MSC_VER
         int flip = rand_r(&data_seed)%2;
+#else
+        int flip = rand(&data_seed)%2;
+#endif
         image cropped = crop_image(orig, pleft, ptop, swidth, sheight);
 
         float dx = ((float)pleft/ow)/sx;
@@ -574,7 +590,11 @@ data load_data_compare(int n, char **paths, int m, int classes, int w, int h)
 
 data load_data_swag(char **paths, int n, int classes, float jitter)
 {
+#ifndef _MSC_VER
     int index = rand_r(&data_seed)%n;
+#else
+    int index = rand(&data_seed)%n;
+#endif
     char *random_path = paths[index];
     
     image orig = load_image_color(random_path, 0, 0);
@@ -607,7 +627,11 @@ data load_data_swag(char **paths, int n, int classes, float jitter)
     float sx = (float)swidth  / w;
     float sy = (float)sheight / h;
 
+#ifndef _MSC_VER
     int flip = rand_r(&data_seed)%2;
+#else
+    int flip = rand(&data_seed)%2;
+#endif
     image cropped = crop_image(orig, pleft, ptop, swidth, sheight);
 
     float dx = ((float)pleft/w)/sx;
@@ -665,7 +689,11 @@ data load_data_detection(int n, char **paths, int m, int classes, int w, int h, 
            orig = rot;
          */
 
+#ifndef _MSC_VER
         int flip = rand_r(&data_seed)%2;
+#else
+        int flip = rand(&data_seed)%2;
+#endif
         image cropped = crop_image(orig, pleft, ptop, swidth, sheight);
 
         float dx = ((float)pleft/ow)/sx;
@@ -719,13 +747,24 @@ void *load_thread(void *ptr)
     return 0;
 }
 
-pthread_t load_data_in_thread(load_args args)
+#ifndef _MSC_VER
+pthread_t 
+#else
+void
+#endif
+load_data_in_thread(load_args args)
 {
+#ifndef _MSC_VER
     pthread_t thread;
+#endif
     struct load_args *ptr = calloc(1, sizeof(struct load_args));
     *ptr = args;
+#ifndef _MSC_VER
     if(pthread_create(&thread, 0, load_thread, ptr)) error("Thread creation failed");
     return thread;
+#else
+    load_thread(ptr);
+#endif
 }
 
 data load_data_writing(char **paths, int n, int m, int w, int h, int out_w, int out_h)
@@ -852,7 +891,11 @@ void get_random_batch(data d, int n, float *X, float *y)
 {
     int j;
     for(j = 0; j < n; ++j){
+#ifndef _MSC_VER
         int index = rand_r(&data_seed)%d.X.rows;
+#else
+        int index = rand(&data_seed)%d.X.rows;
+#endif
         memcpy(X+j*d.X.cols, d.X.vals[index], d.X.cols*sizeof(float));
         memcpy(y+j*d.y.cols, d.y.vals[index], d.y.cols*sizeof(float));
     }
@@ -965,7 +1008,11 @@ void randomize_data(data d)
 {
     int i;
     for(i = d.X.rows-1; i > 0; --i){
+#ifndef _MSC_VER
         int index = rand_r(&data_seed)%i;
+#else
+        int index = rand(&data_seed)%i;
+#endif
         float *swap = d.X.vals[index];
         d.X.vals[index] = d.X.vals[i];
         d.X.vals[i] = swap;

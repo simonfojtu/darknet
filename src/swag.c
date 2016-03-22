@@ -48,16 +48,23 @@ void train_swag(char *cfgfile, char *weightfile)
     args.num_boxes = side;
     args.d = &buffer;
     args.type = REGION_DATA;
-
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     clock_t time;
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net.max_batches){
         i += 1;
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
 
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 

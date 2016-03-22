@@ -1,4 +1,6 @@
+#ifndef _MSC_VER
 #include "mini_blas.h"
+#endif
 
 void cpu_gemm_nn(int TA, int TB, int M, int N, int K, float ALPHA, 
         float *A, int lda, 

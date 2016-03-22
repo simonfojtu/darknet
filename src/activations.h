@@ -19,36 +19,42 @@ void activate_array_ongpu(float *x, int n, ACTIVATION a);
 void gradient_array_ongpu(float *x, int n, ACTIVATION a, float *delta);
 #endif
 
-static inline float linear_activate(float x){return x;}
-static inline float logistic_activate(float x){return 1./(1. + exp(-x));}
-static inline float loggy_activate(float x){return 2./(1. + exp(-x)) - 1;}
-static inline float relu_activate(float x){return x*(x>0);}
-static inline float elu_activate(float x){return (x >= 0)*x + (x < 0)*(exp(x)-1);}
-static inline float relie_activate(float x){return x*(x>0);}
-static inline float ramp_activate(float x){return x*(x>0)+.1*x;}
-static inline float leaky_activate(float x){return (x>0) ? x : .1*x;}
-static inline float tanh_activate(float x){return (exp(2*x)-1)/(exp(2*x)+1);}
-static inline float plse_activate(float x)
+#ifndef _MSC_VER
+#define INLINE inline
+#else
+#define INLINE __inline
+#endif
+static INLINE float linear_activate(float x){return x;}
+static INLINE float logistic_activate(float x){return 1./(1. + exp(-x));}
+static INLINE float loggy_activate(float x){return 2./(1. + exp(-x)) - 1;}
+static INLINE float relu_activate(float x){return x*(x>0);}
+static INLINE float elu_activate(float x){return (x >= 0)*x + (x < 0)*(exp(x)-1);}
+static INLINE float relie_activate(float x){return x*(x>0);}
+static INLINE float ramp_activate(float x){return x*(x>0)+.1*x;}
+static INLINE float leaky_activate(float x){return (x>0) ? x : .1*x;}
+static INLINE float tanh_activate(float x){return (exp(2*x)-1)/(exp(2*x)+1);}
+static INLINE float plse_activate(float x)
 {
     if(x < -4) return .01 * (x + 4);
     if(x > 4)  return .01 * (x - 4) + 1;
     return .125*x + .5;
 }
 
-static inline float linear_gradient(float x){return 1;}
-static inline float logistic_gradient(float x){return (1-x)*x;}
-static inline float loggy_gradient(float x)
+static INLINE float linear_gradient(float x){return 1;}
+static INLINE float logistic_gradient(float x){return (1-x)*x;}
+static INLINE float loggy_gradient(float x)
 {
     float y = (x+1.)/2.;
     return 2*(1-y)*y;
 }
-static inline float relu_gradient(float x){return (x>0);}
-static inline float elu_gradient(float x){return (x >= 0) + (x < 0)*(x + 1);}
-static inline float relie_gradient(float x){return (x>0) ? 1 : .01;}
-static inline float ramp_gradient(float x){return (x>0)+.1;}
-static inline float leaky_gradient(float x){return (x>0) ? 1 : .1;}
-static inline float tanh_gradient(float x){return 1-x*x;}
-static inline float plse_gradient(float x){return (x < 0 || x > 1) ? .01 : .125;}
+static INLINE float relu_gradient(float x){return (x>0);}
+static INLINE float elu_gradient(float x){return (x >= 0) + (x < 0)*(x + 1);}
+static INLINE float relie_gradient(float x){return (x>0) ? 1 : .01;}
+static INLINE float ramp_gradient(float x){return (x>0)+.1;}
+static INLINE float leaky_gradient(float x){return (x>0) ? 1 : .1;}
+static INLINE float tanh_gradient(float x){return 1-x*x;}
+static INLINE float plse_gradient(float x){return (x < 0 || x > 1) ? .01 : .125;}
 
+#undef INLINE
 #endif
 

@@ -10,7 +10,11 @@
 
 int inverted = 1;
 int noi = 1;
+#ifndef _MSC_VER
 static const int nind = 5;
+#else
+#define nind 5
+#endif
 
 void train_go(char *cfgfile, char *weightfile)
 {

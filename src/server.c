@@ -1,3 +1,4 @@
+#ifndef _MSC_VER
 #include <stdio.h> /* needed for sockaddr_in */
 #include <string.h> /* needed for sockaddr_in */
 #include <unistd.h>
@@ -203,3 +204,4 @@ void client_update(network net, char *address)
     //printf("Updated\n");
     close(fd);
 }
+#endif

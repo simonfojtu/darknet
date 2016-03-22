@@ -1,3 +1,6 @@
+#include <stdio.h>
+
+#ifdef OPENCV
 #include "network.h"
 #include "detection_layer.h"
 #include "cost_layer.h"
@@ -7,7 +10,6 @@
 #include "image.h"
 #include <sys/time.h>
 
-#ifdef OPENCV
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 image ipl_to_image(IplImage* src);

@@ -51,7 +51,9 @@ void train_captcha(char *cfgfile, char *weightfile)
     char **paths = (char **)list_to_array(plist);
     printf("%d\n", plist->size);
     clock_t time;
+#ifndef _MSC_VER
     pthread_t load_thread;
+#endif
     data train;
     data buffer;
 
@@ -65,12 +67,17 @@ void train_captcha(char *cfgfile, char *weightfile)
     args.labels = labels;
     args.d = &buffer;
     args.type = CLASSIFICATION_DATA;
-
+#ifndef _MSC_VER
     load_thread = load_data_in_thread(args);
+#endif
     while(1){
         ++i;
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
         fix_data_captcha(train, solved);
 
@@ -80,7 +87,9 @@ void train_captcha(char *cfgfile, char *weightfile)
            cvWaitKey(0);
          */
 
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
         float loss = train_network(net, train);

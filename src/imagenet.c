@@ -26,7 +26,9 @@ void train_imagenet(char *cfgfile, char *weightfile)
     printf("%d\n", plist->size);
     int N = plist->size;
     clock_t time;
+#ifndef _MSC_VER
     pthread_t load_thread;
+#endif
     data train;
     data buffer;
 
@@ -41,14 +43,22 @@ void train_imagenet(char *cfgfile, char *weightfile)
     args.d = &buffer;
     args.type = OLD_CLASSIFICATION_DATA;
 
+#ifndef _MSC_VER
     load_thread = load_data_in_thread(args);
+#endif
     int epoch = (*net.seen)/N;
     while(get_current_batch(net) < net.max_batches || net.max_batches == 0){
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
 
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
         float loss = train_network(net, train);
@@ -71,8 +81,9 @@ void train_imagenet(char *cfgfile, char *weightfile)
     char buff[256];
     sprintf(buff, "%s/%s.weights", backup_directory, base);
     save_weights(net, buff);
-
+#ifndef _MSC_VER
     pthread_join(load_thread, 0);
+#endif
     free_data(buffer);
     free_network(net);
     free_ptrs((void**)labels, 1000);
@@ -117,18 +128,26 @@ void validate_imagenet(char *filename, char *weightfile)
     args.d = &buffer;
     args.type = OLD_CLASSIFICATION_DATA;
 
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     for(i = 1; i <= splits; ++i){
         time=clock();
 
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         val = buffer;
 
         num = (i+1)*m/splits - i*m/splits;
         char **part = paths+(i*m/splits);
         if(i != splits){
             args.paths = part;
+#ifndef _MSC_VER
             load_thread = load_data_in_thread(args);
+#endif
         }
         printf("Loaded: %d images in %lf seconds\n", val.X.rows, sec(clock()-time));
 

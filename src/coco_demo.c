@@ -1,3 +1,7 @@
+#include <stdio.h>
+
+#ifdef OPENCV
+
 #include "network.h"
 #include "detection_layer.h"
 #include "cost_layer.h"
@@ -9,7 +13,6 @@
 
 #define FRAMES 1
 
-#ifdef OPENCV
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 void convert_coco_detections(float *predictions, int classes, int num, int square, int side, int w, int h, float thresh, float **probs, box *boxes, int only_objectness);

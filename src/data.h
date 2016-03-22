@@ -1,6 +1,8 @@
 #ifndef DATA_H
 #define DATA_H
+#ifndef _MSC_VER
 #include <pthread.h>
+#endif
 
 #include "matrix.h"
 #include "list.h"
@@ -8,7 +10,12 @@
 
 extern unsigned int data_seed;
 
-static inline float distance_from_edge(int x, int max)
+#ifndef _MSC_VER
+#define INLINE inline
+#else
+#define INLINE __inline
+#endif
+static INLINE float distance_from_edge(int x, int max)
 {
     int dx = (max/2) - x;
     if (dx < 0) dx = -dx;
@@ -18,6 +25,7 @@ static inline float distance_from_edge(int x, int max)
     if (dist > 1) dist = 1;
     return dist;
 }
+#undef INLINE
 
 typedef struct{
     int w, h;
@@ -61,7 +69,9 @@ typedef struct{
 
 void free_data(data d);
 
+#ifndef _MSC_VER
 pthread_t load_data_in_thread(load_args args);
+#endif
 
 void print_letters(float *pred, int n);
 data load_data_captcha(char **paths, int n, int m, int k, int w, int h);

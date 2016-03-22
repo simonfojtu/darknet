@@ -3,7 +3,9 @@
 #include "parser.h"
 #include "option_list.h"
 #include "blas.h"
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 
 #ifdef OPENCV
 #include "opencv2/highgui/highgui_c.h"
@@ -64,7 +66,9 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile)
     printf("%d\n", plist->size);
     int N = plist->size;
     clock_t time;
+#ifndef _MSC_VER
     pthread_t load_thread;
+#endif
     data train;
     data buffer;
 
@@ -83,15 +87,22 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile)
     args.labels = labels;
     args.d = &buffer;
     args.type = CLASSIFICATION_DATA;
-
+#ifndef _MSC_VER
     load_thread = load_data_in_thread(args);
+#endif
     int epoch = (*net.seen)/N;
     while(get_current_batch(net) < net.max_batches || net.max_batches == 0){
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
 
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
 
@@ -125,7 +136,9 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile)
     sprintf(buff, "%s/%s.weights", backup_directory, base);
     save_weights(net, buff);
 
+#ifndef _MSC_VER
     pthread_join(load_thread, 0);
+#endif
     free_data(buffer);
     free_network(net);
     free_ptrs((void**)labels, classes);
@@ -177,18 +190,26 @@ void validate_classifier(char *datacfg, char *filename, char *weightfile)
     args.d = &buffer;
     args.type = OLD_CLASSIFICATION_DATA;
 
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     for(i = 1; i <= splits; ++i){
         time=clock();
 
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         val = buffer;
 
         num = (i+1)*m/splits - i*m/splits;
         char **part = paths+(i*m/splits);
         if(i != splits){
             args.paths = part;
+#ifndef _MSC_VER
             load_thread = load_data_in_thread(args);
+#endif
         }
         printf("Loaded: %d images in %lf seconds\n", val.X.rows, sec(clock()-time));
 
@@ -535,17 +556,25 @@ void test_classifier(char *datacfg, char *cfgfile, char *weightfile, int target_
     args.d = &buffer;
     args.type = OLD_CLASSIFICATION_DATA;
 
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     for(curr = net.batch; curr < m; curr += net.batch){
         time=clock();
 
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         val = buffer;
 
         if(curr < m){
             args.paths = paths + curr;
             if (curr + net.batch > m) args.n = m - curr;
+#ifndef _MSC_VER
             load_thread = load_data_in_thread(args);
+#endif
         }
         fprintf(stderr, "Loaded: %d images in %lf seconds\n", val.X.rows, sec(clock()-time));
 

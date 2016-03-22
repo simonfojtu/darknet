@@ -26,7 +26,9 @@ void train_compare(char *cfgfile, char *weightfile)
     int N = plist->size;
     printf("%d\n", N);
     clock_t time;
+#ifndef _MSC_VER
     pthread_t load_thread;
+#endif
     data train;
     data buffer;
 
@@ -39,17 +41,24 @@ void train_compare(char *cfgfile, char *weightfile)
     args.m = N;
     args.d = &buffer;
     args.type = COMPARE_DATA;
-
+#ifndef _MSC_VER
     load_thread = load_data_in_thread(args);
+#endif
     int epoch = *net.seen/N;
     int i = 0;
     while(1){
         ++i;
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
 
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
         float loss = train_network(net, train);
@@ -71,7 +80,9 @@ void train_compare(char *cfgfile, char *weightfile)
             if(epoch%22 == 0) net.learning_rate *= .1;
         }
     }
+#ifndef _MSC_VER
     pthread_join(load_thread, 0);
+#endif
     free_data(buffer);
     free_network(net);
     free_ptrs((void**)paths, plist->size);
@@ -112,18 +123,26 @@ void validate_compare(char *filename, char *weightfile)
     args.d = &buffer;
     args.type = COMPARE_DATA;
 
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     for(i = 1; i <= splits; ++i){
         time=clock();
 
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         val = buffer;
 
         num = (i+1)*N/splits - i*N/splits;
         char **part = paths+(i*N/splits);
         if(i != splits){
             args.paths = part;
+#ifndef _MSC_VER
             load_thread = load_data_in_thread(args);
+#endif
         }
         printf("Loaded: %d images in %lf seconds\n", val.X.rows, sec(clock()-time));
 

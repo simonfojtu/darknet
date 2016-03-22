@@ -39,14 +39,21 @@ void train_writing(char *cfgfile, char *weightfile)
     args.m = N;
     args.d = &buffer;
     args.type = WRITING_DATA;
-
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     int epoch = (*net.seen)/N;
     while(get_current_batch(net) < net.max_batches || net.max_batches == 0){
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
         printf("Loaded %lf seconds\n",sec(clock()-time));
 
         time=clock();

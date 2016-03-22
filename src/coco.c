@@ -59,16 +59,23 @@ void train_coco(char *cfgfile, char *weightfile)
     args.num_boxes = side;
     args.d = &buffer;
     args.type = REGION_DATA;
-
+#ifndef _MSC_VER
     pthread_t load_thread = load_data_in_thread(args);
+#endif
     clock_t time;
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net.max_batches){
         i += 1;
         time=clock();
+#ifndef _MSC_VER
         pthread_join(load_thread, 0);
+#else
+        load_data_in_thread(args);
+#endif
         train = buffer;
+#ifndef _MSC_VER
         load_thread = load_data_in_thread(args);
+#endif
 
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
@@ -180,7 +187,11 @@ void validate_coco(char *cfgfile, char *weightfile)
 
     int j;
     char buff[1024];
+#ifndef _MSC_VER
     snprintf(buff, 1024, "%s/coco_results.json", base);
+#else
+    sprintf_s(buff, 1024, "%s/coco_results.json", base);
+#endif
     FILE *fp = fopen(buff, "w");
     fprintf(fp, "[\n");
 
@@ -201,7 +212,9 @@ void validate_coco(char *cfgfile, char *weightfile)
     image *val_resized = calloc(nthreads, sizeof(image));
     image *buf = calloc(nthreads, sizeof(image));
     image *buf_resized = calloc(nthreads, sizeof(image));
+#ifndef _MSC_VER
     pthread_t *thr = calloc(nthreads, sizeof(pthread_t));
+#endif
 
     load_args args = {0};
     args.w = net.w;
@@ -212,13 +225,19 @@ void validate_coco(char *cfgfile, char *weightfile)
         args.path = paths[i+t];
         args.im = &buf[t];
         args.resized = &buf_resized[t];
+#ifndef _MSC_VER
         thr[t] = load_data_in_thread(args);
+#else
+        load_data_in_thread(args);
+#endif
     }
     time_t start = time(0);
     for(i = nthreads; i < m+nthreads; i += nthreads){
         fprintf(stderr, "%d\n", i);
         for(t = 0; t < nthreads && i+t-nthreads < m; ++t){
+#ifndef _MSC_VER
             pthread_join(thr[t], 0);
+#endif
             val[t] = buf[t];
             val_resized[t] = buf_resized[t];
         }
@@ -226,7 +245,11 @@ void validate_coco(char *cfgfile, char *weightfile)
             args.path = paths[i+t];
             args.im = &buf[t];
             args.resized = &buf_resized[t];
+#ifndef _MSC_VER
             thr[t] = load_data_in_thread(args);
+#else
+            load_data_in_thread(args);
+#endif
         }
         for(t = 0; t < nthreads && i+t-nthreads < m; ++t){
             char *path = paths[i+t-nthreads];
@@ -272,7 +295,11 @@ void validate_coco_recall(char *cfgfile, char *weightfile)
     FILE **fps = calloc(classes, sizeof(FILE *));
     for(j = 0; j < classes; ++j){
         char buff[1024];
+#ifndef _MSC_VER
         snprintf(buff, 1024, "%s%s.txt", base, coco_classes[j]);
+#else
+        sprintf_s(buff, 1024, "%s%s.txt", base, coco_classes[j]);
+#endif
         fps[j] = fopen(buff, "w");
     }
     box *boxes = calloc(side*side*l.n, sizeof(box));
